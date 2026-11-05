@@ -10,20 +10,31 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main id="app" class="card">
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <main id="app" class="glass-card">
     <div id="loginView">
-      <div class="logo">🔐</div>
+      <div class="lock-icon-wrap">
+        <div class="lock-glow"></div>
+        <div class="lock-emoji">🔐</div>
+      </div>
       <h1>Welcome</h1>
       <p class="subtitle">Sign in with Google to continue.</p>
-      <div id="googleBtn"></div>
+
+      <!-- Google Sign-In Container / Custom Button Wrapper -->
+      <div id="googleBtnWrapper">
+        <div id="googleBtn"></div>
+      </div>
+
       <p id="error" class="error" hidden></p>
     </div>
 
     <div id="welcomeView" class="welcome" hidden>
       <div class="avatar" id="avatar"></div>
       <h1>Welcome, <span id="userName"></span>!</h1>
-      <p class="welcomeSub">You are now logged in.</p>
-      <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+      <p class="welcomeSub" id="userEmail"></p>
+      <button id="logoutBtn" class="btn btn-logout">Logout</button>
     </div>
   </main>
 

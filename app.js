@@ -22,6 +22,76 @@ function clearError() {
   errorEl.textContent = "";
 }
 
+// --- Shop / Checkout ---
+// Your presets. Each product has a demo (YouTube) and the gear image shown on the card.
+const PRODUCTS = [
+  {
+    id: "gp5-modernmetal",
+    name: "GP-5 Modern Metal",
+    price: "PHP 499",
+    description: "High-gain 5150-style modern metal preset for the Valeton GP-5.",
+    demo: "https://www.youtube.com/watch?v=jss7xTVT99M",
+    image: "58000_58076_1.jpg",
+    payMongo: "https://paymongo.com/YOUR_LINK_HERE",
+    paypal: "https://paypal.me/YOUR_LINK_HERE",
+  },
+];
+
+const checkoutModal = document.getElementById("checkoutModal");
+const checkoutTitle = document.getElementById("checkoutTitle");
+const checkoutDesc = document.getElementById("checkoutDesc");
+const checkoutImg = document.getElementById("checkoutImg");
+const checkoutPrice = document.getElementById("checkoutPrice");
+const shopGrid = document.getElementById("shopGrid");
+
+let currentProduct = null;
+
+function renderShop() {
+  shopGrid.innerHTML = "";
+  PRODUCTS.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.innerHTML = `
+      <img src="products/${p.image}" alt="${p.name}" class="prod-img" />
+      <div class="name">${p.name}</div>
+      <div class="price">${p.price}</div>
+      <div class="demo">
+        <a href="${p.demo}" target="_blank" rel="noopener" onclick="event.stopPropagation()">▶ Demo</a>
+      </div>
+      <div class="buy">Get preset →</div>
+    `;
+    card.addEventListener("click", () => openCheckout(p));
+    shopGrid.appendChild(card);
+  });
+}
+
+function openCheckout(product) {
+  currentProduct = product;
+  checkoutTitle.textContent = product.name;
+  checkoutDesc.textContent = product.description || "";
+  checkoutImg.src = `products/${product.image}`;
+  checkoutImg.alt = product.name;
+  checkoutPrice.textContent = `${product.price} — choose payment method`;
+  checkoutModal.classList.add("active");
+  checkoutModal.hidden = false;
+}
+
+function closeCheckout() {
+  currentProduct = null;
+  checkoutModal.classList.remove("active");
+  checkoutModal.hidden = true;
+}
+
+function payViaPayMongo() {
+  if (!currentProduct) return;
+  window.open(currentProduct.payMongo, "_blank");
+}
+
+function payViaPayPal() {
+  if (!currentProduct) return;
+  window.open(currentProduct.paypal, "_blank");
+}
+
 function showWelcome(user) {
   userNameEl.textContent = user.name || "Guest";
   avatarEl.textContent = "";
@@ -56,10 +126,20 @@ function init() {
   // never wired and did nothing.
   document.getElementById("logoutBtn").addEventListener("click", logout);
 
+  // Checkout modal buttons
+  document.getElementById("payPayMongo").addEventListener("click", payViaPayMongo);
+  document.getElementById("payPayPal").addEventListener("click", payViaPayPal);
+  document.getElementById("closeCheckout").addEventListener("click", closeCheckout);
+
   // Restore a previously logged-in user.
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    try { showWelcome(JSON.parse(saved)); return; } catch (e) { /* ignore */ }
+    try {
+      const user = JSON.parse(saved);
+      showWelcome(user);
+      renderShop();
+      return;
+    } catch (e) { /* ignore */ }
   }
 
   if (!CLIENT_ID || CLIENT_ID === "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE") {

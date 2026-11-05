@@ -34,9 +34,29 @@
       <div class="avatar" id="avatar"></div>
       <h1>Welcome, <span id="userName"></span>!</h1>
       <p class="welcomeSub" id="userEmail"></p>
+
+      <div id="shopView" class="shop">
+        <div id="shopGrid" class="shop-grid"></div>
+      </div>
+
       <button id="logoutBtn" class="btn btn-logout">Logout</button>
     </div>
   </main>
+
+  <!-- Checkout Modal -->
+  <div id="checkoutModal" class="modal-overlay" hidden>
+    <div class="modal-content">
+      <img id="checkoutImg" class="checkout-img" alt="" />
+      <h2 id="checkoutTitle">Checkout</h2>
+      <p id="checkoutDesc" class="subtitle" style="font-size:13px; margin-bottom:4px;"></p>
+      <p id="checkoutPrice" class="subtitle" style="margin-bottom:0;">Select a payment method</p>
+      <div class="payment-options">
+        <button id="payPayMongo" class="pay-btn paymongo">Pay with PayMongo (GCash / Maya / Card)</button>
+        <button id="payPayPal" class="pay-btn paypal">Pay with PayPal</button>
+      </div>
+      <button id="closeCheckout" class="pay-btn" style="margin-top:12px;">Cancel</button>
+    </div>
+  </div>
 
   <script src="https://accounts.google.com/gsi/client" async></script>
   <script src="app.js"></script>

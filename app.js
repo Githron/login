@@ -57,12 +57,42 @@ function init() {
     return;
   }
 
-  const google = window.google;
-  if (!google || !google.accounts || !google.accounts.id) {
-    showError("Google sign-in library failed to load. Check your connection.");
+  // The Google script is loaded with `async`, so it may arrive after
+  // DOMContentLoaded. Wait for it, and give up gracefully if it doesn't.
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    setupGoogle();
     return;
   }
 
+  const script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    showError("Google sign-in library is taking too long to load. Check your connection and reload.");
+  }, 8000);
+
+  if (script) {
+    script.addEventListener("load", () => {
+      if (timedOut) return;
+      clearTimeout(timer);
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        setupGoogle();
+      } else {
+        showError("Google sign-in library failed to load. Check your connection and reload.");
+      }
+    });
+    script.addEventListener("error", () => {
+      clearTimeout(timer);
+      timedOut = true;
+      showError("Google sign-in library failed to download. Check your connection and reload.");
+    });
+  } else {
+    clearTimeout(timer);
+    showError("Google sign-in library failed to load. Check your connection and reload.");
+  }
+}
+
+function setupGoogle() {
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
     callback: handleCredential,

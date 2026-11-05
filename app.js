@@ -2,7 +2,7 @@
 // Steps: https://console.cloud.google.com/apis/credentials -> Create OAuth 2.0 Client ID
 //         -> Authorized JavaScript origins: http://localhost (and your domain)
 //         -> Authorized redirect URIs: leave blank (uses the current page)
-const CLIENT_ID = "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE";
+const CLIENT_ID = "289843250679-vbf6u9qj8qepc9e2cjfvg2u5gcri72ps.apps.googleusercontent.com";
 
 const STORAGE_KEY = "welcome_user";
 

@@ -179,7 +179,8 @@ function retryAfter(ms) {
 
 // --- ID token verification (RS256, against Google's public JWKS) ---
 
-const JWKS_URL = "https://www.googleapis.com/oauth2/v3/jwks";
+// From Google's OpenID discovery: https://accounts.google.com/.well-known/openid-configuration
+const JWKS_URL = "https://www.googleapis.com/oauth2/v3/certs";
 let cachedJwks = null;
 
 async function fetchJwks() {

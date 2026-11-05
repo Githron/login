@@ -32,8 +32,8 @@ const PRODUCTS = [
     description: "High-gain 5150-style modern metal preset for the Valeton GP-5.",
     demo: "https://www.youtube.com/watch?v=jss7xTVT99M",
     image: "58000_58076_1.jpg",
-    payMongo: "https://paymongo.com/YOUR_LINK_HERE",
-    paypal: "https://paypal.me/YOUR_LINK_HERE",
+    payMongo: "",   // PayMongo signup is currently paused — leave blank until available
+    paypal: "https://paypal.me/romelolacida1",
   },
 ];
 
@@ -161,14 +161,27 @@ function init() {
 
   const script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
   let timedOut = false;
+  // A load event can be missed (e.g. the script was already in flight when
+  // init() runs, or the event is swallowed on a restored page). Poll as a
+  // backstop so the button still renders once the library lands.
+  const poll = setInterval(() => {
+    if (timedOut) return;
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      clearInterval(poll);
+      clearTimeout(timer);
+      setupGoogle();
+    }
+  }, 200);
   const timer = setTimeout(() => {
     timedOut = true;
+    clearInterval(poll);
     showError("Google sign-in library is taking too long to load. Check your connection and reload.");
   }, 8000);
 
   if (script) {
     script.addEventListener("load", () => {
       if (timedOut) return;
+      clearInterval(poll);
       clearTimeout(timer);
       if (window.google && window.google.accounts && window.google.accounts.id) {
         setupGoogle();
@@ -177,11 +190,13 @@ function init() {
       }
     });
     script.addEventListener("error", () => {
+      clearInterval(poll);
       clearTimeout(timer);
       timedOut = true;
       showError("Google sign-in library failed to download. Check your connection and reload.");
     });
   } else {
+    clearInterval(poll);
     clearTimeout(timer);
     showError("Google sign-in library failed to load. Check your connection and reload.");
   }
@@ -194,13 +209,17 @@ function warmJwks() {
 }
 
 function setupGoogle() {
+  const googleBtn = document.getElementById("googleBtn");
+  // Drop the loading placeholder once the real button is rendered.
+  googleBtn.classList.remove("google-btn-loading");
+
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
     callback: handleCredential,
     auto_select: false,
   });
 
-  google.accounts.id.renderButton(document.getElementById("googleBtn"), {
+  google.accounts.id.renderButton(googleBtn, {
     type: "standard",
     theme: "filled_black",
     size: "large",
@@ -222,6 +241,7 @@ async function handleCredential(response) {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     showWelcome(user);
+    renderShop(); // build the shop grid now, not just on page refresh
   } catch (err) {
     // A network failure fetching Google's public keys is transient — retry
     // once before giving up. A genuine verification failure means the token
@@ -239,6 +259,7 @@ async function handleCredential(response) {
           };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
           showWelcome(user);
+          renderShop();
           return;
         }
       } catch {

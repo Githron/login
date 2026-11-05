@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes" />
   <title>Welcome</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://accounts.google.com" />
+  <link rel="preconnect" href="https://www.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -16,7 +18,7 @@
   <main id="app" class="glass-card">
     <div id="loginView">
       <div class="lock-icon-wrap">
-        <div class="lock-glow"></div>
+        <div id="lock-glow" class="lock-glow"></div>
         <div class="lock-emoji">🔐</div>
       </div>
       <h1>Welcome</h1>
@@ -24,7 +26,7 @@
 
       <!-- Google Sign-In Container / Custom Button Wrapper -->
       <div id="googleBtnWrapper">
-        <div id="googleBtn"></div>
+        <div id="googleBtn" class="google-btn-loading" aria-busy="true"></div>
       </div>
 
       <p id="error" class="error" hidden></p>

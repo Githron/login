@@ -19,31 +19,32 @@ body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   background-color: var(--bg);
   color: var(--text-main);
-  overflow: hidden;
   position: relative;
+  touch-action: pan-y; /* allow pinch zoom, prevent horizontal scroll */
+  overflow-x: hidden;
 }
 
 /* Abstract Background Glows */
 .bg-glow {
   position: absolute;
-  width: 600px;
-  height: 600px;
+  width: 140vmin;
+  height: 140vmin;
   border-radius: 50%;
   filter: blur(120px);
   z-index: -1;
   opacity: 0.6;
 }
-.bg-glow-1 { background: #1e3a8a; top: -200px; left: -200px; }
-.bg-glow-2 { background: #4c1d95; bottom: -200px; right: -200px; }
+.bg-glow-1 { background: #1e3a8a; top: -30vmin; left: -30vmin; }
+.bg-glow-2 { background: #4c1d95; bottom: -30vmin; right: -30vmin; }
 
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  border-radius: 32px;
-  padding: 48px;
-  width: 90%;
-  max-width: 440px;
+  border-radius: clamp(20px, 5vw, 32px);
+  padding: clamp(16px, 4vw, 32px);
+  width: min(90vw, 440px);
+  max-width: 100%;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   text-align: center;
   position: relative;
@@ -52,19 +53,19 @@ body {
 }
 
 .lock-icon-wrap { position: relative; margin-bottom: 24px; }
-.lock-glow {
+#lock-glow {
   position: absolute;
-  width: 100px;
-  height: 100px;
+  width: min(22vmin, 40px);
+  height: min(22vmin, 40px);
   background: var(--glow-accent);
   filter: blur(40px);
   left: 50%;
-  margin-left: -50px;
+  transform: translateX(-50%);
 }
-.lock-emoji { font-size: 64px; position: relative; }
+.lock-emoji { font-size: min(40px, 12vmin); position: relative; }
 
-h1 { margin: 0 0 8px; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
-.subtitle { margin: 0 0 32px; color: var(--text-muted); font-size: 16px; }
+h1 { margin: 0 0 8px; font-size: min(22px, 6vw, 32px); font-weight: 700; letter-spacing: -0.5px; }
+.subtitle { margin: 0 0 24px; color: var(--text-muted); font-size: min(14px, 3.5vw, 16px); }
 
 #googleBtnWrapper {
   display: flex;
@@ -73,7 +74,30 @@ h1 { margin: 0 0 8px; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
   padding: 16px;
   border-radius: 16px;
   border: 1px solid var(--glass-border);
+  min-height: 56px;
+  align-items: center;
 }
+
+/* Shown while the Google GIS library is still downloading. Replaced by the
+   real Google button once renderButton() runs. */
+#googleBtn.google-btn-loading::before {
+  content: "";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+#googleBtn.google-btn-loading::after {
+  content: "Loading Google sign-in…";
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-left: 12px;
+  white-space: nowrap;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .error { color: #f87171; font-size: 14px; margin-top: 16px; }
 
@@ -91,7 +115,9 @@ h1 { margin: 0 0 8px; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
 /* Checkout Modal Styles */
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
@@ -101,6 +127,7 @@ h1 { margin: 0 0 8px; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
+  overflow: hidden;
 }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
 

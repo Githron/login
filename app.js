@@ -24,8 +24,12 @@ function clearError() {
 
 function showWelcome(user) {
   userNameEl.textContent = user.name || "Guest";
+  avatarEl.textContent = "";
   if (user.picture) {
-    avatarEl.innerHTML = `<img src="${user.picture}" alt="${user.name}" />`;
+    const img = document.createElement("img");
+    img.src = user.picture;
+    img.alt = user.name || "Guest";
+    avatarEl.appendChild(img);
   } else {
     avatarEl.textContent = (user.name || "?").charAt(0).toUpperCase();
   }
@@ -110,11 +114,12 @@ function setupGoogle() {
   document.getElementById("logoutBtn").addEventListener("click", logout);
 }
 
-function handleCredential(response) {
-  // Google's ID token is a JWT. Decode the payload client-side to get user info.
-  const payload = decodeJwt(response.credential);
+async function handleCredential(response) {
+  // Google's ID token is a JWT. Verify its signature and claims before trusting
+  // any data inside it — never trust a decoded-but-unverified token.
+  const payload = await verifyIdToken(response.credential);
   if (!payload) {
-    showError("Could not read sign-in response.");
+    showError("Sign-in could not be verified. Please try again.");
     return;
   }
   const user = {
@@ -126,14 +131,89 @@ function handleCredential(response) {
   showWelcome(user);
 }
 
-function decodeJwt(token) {
+// --- ID token verification (RS256, against Google's public JWKS) ---
+
+const JWKS_URL = "https://www.googleapis.com/oauth2/v3/jwks";
+let cachedJwks = null;
+
+async function fetchJwks() {
+  if (cachedJwks) return cachedJwks;
+  const res = await fetch(JWKS_URL);
+  if (!res.ok) throw new Error("Could not fetch Google public keys");
+  cachedJwks = await res.json();
+  return cachedJwks;
+}
+
+async function verifyIdToken(token) {
+  if (typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+
+  const header = decodeJsonB64(parts[0]);
+  if (!header || header.alg !== "RS256") return null;
+
+  // Google rotates keys; if the kid isn't in our cache, refetch once.
+  let jwks = await fetchJwks();
+  let key = (jwks.keys || []).find(k => k.kid === header.kid);
+  if (!key) {
+    cachedJwks = null;
+    jwks = await fetchJwks();
+    key = (jwks.keys || []).find(k => k.kid === header.kid);
+  }
+  if (!key) return null;
+
+  const valid = await verifySignature(token, key);
+  if (!valid) return null;
+
+  const payload = decodeJsonB64(parts[1]);
+  if (!payload) return null;
+
+  // Claim checks.
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.iss !== "https://accounts.google.com") return null;
+  if (payload.aud !== CLIENT_ID) return null;
+  if (!payload.exp || payload.exp < now) return null;
+  if (payload.iat && payload.iat > now + 300) return null;
+
+  return payload;
+}
+
+async function verifySignature(token, key) {
+  const [headerB64, payloadB64, signatureB64] = token.split(".");
+  const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
+  const signature = b64urlToBytes(signatureB64);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    "jwk",
+    key,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+
+  return crypto.subtle.verify(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    signature,
+    data
+  );
+}
+
+function decodeJsonB64(b64) {
   try {
-    const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(base64);
+    const str = b64.replace(/-/g, "+").replace(/_/g, "/");
+    const json = atob(str);
     return JSON.parse(json);
-  } catch (e) {
+  } catch {
     return null;
   }
+}
+
+function b64urlToBytes(b64) {
+  const str = b64.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = str.length % 4 ? "=".repeat(4 - (str.length % 4)) : "";
+  const binary = atob(str + pad);
+  return new Uint8Array(binary.split("").map(c => c.charCodeAt(0)));
 }
 
 if (document.readyState === "loading") {

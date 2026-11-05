@@ -50,6 +50,12 @@ function logout() {
 }
 
 function init() {
+  // Attach the logout handler unconditionally. It used to live inside
+  // setupGoogle(), which only runs when the Google script loads — so on a
+  // restored session (welcome view shown from localStorage) the button was
+  // never wired and did nothing.
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+
   // Restore a previously logged-in user.
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
@@ -121,8 +127,6 @@ function setupGoogle() {
     text: "continue_with",
     shape: "rectangular",
   });
-
-  document.getElementById("logoutBtn").addEventListener("click", logout);
 }
 
 async function handleCredential(response) {

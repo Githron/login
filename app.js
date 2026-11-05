@@ -61,6 +61,11 @@ function init() {
     return;
   }
 
+  // Pre-warm the JWKS cache in the background. Google's public keys are safe
+  // to fetch eagerly (they're public by design), so the signature check at
+  // sign-in time is instant instead of adding a round-trip to the popup.
+  warmJwks();
+
   // The Google script is loaded with `async`, so it may arrive after
   // DOMContentLoaded. Wait for it, and give up gracefully if it doesn't.
   if (window.google && window.google.accounts && window.google.accounts.id) {
@@ -96,6 +101,12 @@ function init() {
   }
 }
 
+// Fetch Google's public keys once and cache them for the session. Errors are
+// swallowed — verification will retry at sign-in time if this fails.
+function warmJwks() {
+  fetchJwks().catch(() => { /* will retry on demand */ });
+}
+
 function setupGoogle() {
   google.accounts.id.initialize({
     client_id: CLIENT_ID,
@@ -117,18 +128,49 @@ function setupGoogle() {
 async function handleCredential(response) {
   // Google's ID token is a JWT. Verify its signature and claims before trusting
   // any data inside it — never trust a decoded-but-unverified token.
-  const payload = await verifyIdToken(response.credential);
-  if (!payload) {
-    showError("Sign-in could not be verified. Please try again.");
-    return;
+  try {
+    const payload = await verifyIdToken(response.credential);
+    if (!payload) throw new Error("invalid");
+    const user = {
+      name: payload.name || payload.email || "Guest",
+      email: payload.email || "",
+      picture: payload.picture || "",
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    showWelcome(user);
+  } catch (err) {
+    // A network failure fetching Google's public keys is transient — retry
+    // once before giving up. A genuine verification failure means the token
+    // was bad; don't retry, just report it.
+    if (err && err.message === "network" && !signingIn) {
+      signingIn = true;
+      try {
+        await retryAfter(1500);
+        const payload = await verifyIdToken(response.credential);
+        if (payload) {
+          const user = {
+            name: payload.name || payload.email || "Guest",
+            email: payload.email || "",
+            picture: payload.picture || "",
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+          showWelcome(user);
+          return;
+        }
+      } catch {
+        // fall through to the generic message below
+      } finally {
+        signingIn = false;
+      }
+    }
+    showError("Sign-in could not be verified. Check your connection and try again.");
   }
-  const user = {
-    name: payload.name || payload.email || "Guest",
-    email: payload.email || "",
-    picture: payload.picture || "",
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-  showWelcome(user);
+}
+
+let signingIn = false;
+
+function retryAfter(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // --- ID token verification (RS256, against Google's public JWKS) ---
@@ -138,8 +180,13 @@ let cachedJwks = null;
 
 async function fetchJwks() {
   if (cachedJwks) return cachedJwks;
-  const res = await fetch(JWKS_URL);
-  if (!res.ok) throw new Error("Could not fetch Google public keys");
+  let res;
+  try {
+    res = await fetch(JWKS_URL);
+  } catch {
+    throw new Error("network");
+  }
+  if (!res.ok) throw new Error("network");
   cachedJwks = await res.json();
   return cachedJwks;
 }

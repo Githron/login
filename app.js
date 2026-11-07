@@ -13,21 +13,16 @@ const navUserEmail = document.getElementById("navUserEmail");
 const drawerAvatar = document.getElementById("drawerAvatar");
 const drawerUserName = document.getElementById("drawerUserName");
 const drawerUserEmail = document.getElementById("drawerUserEmail");
-const dashAvatar = document.getElementById("dashAvatar");
-const dashUserName = document.getElementById("dashUserName");
-const dashUserEmail = document.getElementById("dashUserEmail");
 const productCount = document.getElementById("productCount");
 const footerUser = document.getElementById("footerUser");
-const pageBody = document.getElementById("pageBody");
+const errorEl = document.getElementById("error");
 
 function showError(msg) {
-  const errorEl = document.getElementById("error");
   errorEl.textContent = msg;
   errorEl.hidden = false;
 }
 
 function clearError() {
-  const errorEl = document.getElementById("error");
   errorEl.hidden = true;
   errorEl.textContent = "";
 }
@@ -108,7 +103,7 @@ function payViaLink(url, label) {
     checkoutError.hidden = false;
     return;
   }
-  window.open(url, "_blank", "noopener");
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function payViaPayMongo() {
@@ -126,6 +121,7 @@ function renderUser(user) {
   const initial = name.charAt(0).toUpperCase();
 
   function setAvatar(node) {
+    if (!node) return;
     node.innerHTML = "";
     if (user.picture) {
       const img = document.createElement("img");
@@ -139,13 +135,10 @@ function renderUser(user) {
 
   setAvatar(navAvatar);
   setAvatar(drawerAvatar);
-  setAvatar(dashAvatar);
   navUserName.textContent = name;
   navUserEmail.textContent = email;
   drawerUserName.textContent = name;
   drawerUserEmail.textContent = email;
-  dashUserName.textContent = name;
-  dashUserEmail.textContent = email;
   if (footerUser) footerUser.textContent = name;
 }
 
@@ -213,7 +206,7 @@ function navigate(hash) {
   // Only write the hash when it actually differs — writing the same value is a
   // no-op, and it avoids re-entrant hashchange events.
   const target = "#" + route;
-  if (route !== "shop" && window.location.hash !== target) {
+  if (window.location.hash !== target) {
     window.location.hash = target;
   }
 }
@@ -254,10 +247,7 @@ function attachNavigationHandlers() {
 
   navToggle?.addEventListener("click", toggleDrawer);
   drawerBackdrop?.addEventListener("click", closeDrawer);
-  // Clicking the drawer itself (not backdrop) closes it
-  document.getElementById("navDrawer")?.addEventListener("click", (e) => {
-    if (e.target === e.currentTarget) closeDrawer();
-  });
+  // Clicking the drawer backdrop closes it; clicking inside the drawer keeps it open.
 
   // SPA navigation: clicking a nav link swaps the visible section in place.
   document.querySelectorAll(".nav-link, .drawer-link").forEach(link => {
@@ -377,6 +367,9 @@ async function handleCredential(response) {
       }
     } catch {
       showError("Sign-in could not be verified. Check your connection and try again.");
+    } finally {
+      // Ensure signingIn is reset even if diagnostic throws
+      signingIn = false;
     }
   }
 }
@@ -439,6 +432,8 @@ async function verifyIdToken(token) {
                    (Array.isArray(aud) && aud.includes(CLIENT_ID));
   if (!audValid) return null;
   if (!payload.exp || payload.exp < now) return null;
+  // Check 'nbf' (not before) claim — token not valid before this time.
+  if (payload.nbf && payload.nbf > now + 300) return null;
   if (payload.iat && payload.iat > now + 300) return null;
 
   return payload;
@@ -478,6 +473,7 @@ async function verifyIdTokenDiagnostic(token) {
                    (Array.isArray(aud) && aud.includes(CLIENT_ID));
   if (!audValid) return { ok: false, reason: `aud mismatch: ${JSON.stringify(aud)}` };
   if (!payload.exp || payload.exp < now) return { ok: false, reason: `token expired (exp=${payload.exp})` };
+  if (payload.nbf && payload.nbf > now + 300) return { ok: false, reason: `token not yet valid (nbf=${payload.nbf})` };
   if (payload.iat && payload.iat > now + 300) return { ok: false, reason: `token issued in the future (iat=${payload.iat})` };
 
   return { ok: true, payload };
@@ -522,102 +518,8 @@ function b64urlToBytes(b64) {
 }
 
 // Attach navigation handlers when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", attachNavigationHandlers);
-} else {
-  attachNavigationHandlers();
-}
-
-// --- Login / Welcome flow ---
-function init() {
-  // Attach the logout handlers unconditionally. They used to live inside
-  // setupGoogle(), which only runs when the Google script loads — so on a
-  // restored session the button was never wired and did nothing.
-  const navLogout = document.getElementById("navLogout");
-  const navLogoutDrawer = document.getElementById("navLogoutDrawer");
-  navLogout?.addEventListener("click", logout);
-  navLogoutDrawer?.addEventListener("click", logout);
-
-  if (!CLIENT_ID || CLIENT_ID === "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE") {
-    showError("Google sign-in is not configured. Add your Client ID in app.js.");
-    return;
-  }
-
-  // Pre-warm the JWKS cache in the background. Google's public keys are safe
-  // to fetch eagerly (they're public by design), so the signature check at
-  // sign-in time is instant instead of adding a round-trip to the popup.
-  warmJwks();
-
-  // The Google script is loaded with `async`, so it may arrive after
-  // DOMContentLoaded. Wait for it, and give up gracefully if it doesn't.
-  if (window.google && window.google.accounts && window.google.accounts.id) {
-    setupGoogle();
-    return;
-  }
-
-  const script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
-  let timedOut = false;
-  // A load event can be missed (e.g. the script was already in flight when
-  // init() runs, or the event is swallowed on a restored page). Poll as a
-  // backstop so the button still renders once the library lands.
-  const poll = setInterval(() => {
-    if (timedOut) return;
-    if (window.google && window.google.accounts && window.google.accounts.id) {
-      clearInterval(poll);
-      clearTimeout(timer);
-      setupGoogle();
-    }
-  }, 200);
-  const timer = setTimeout(() => {
-    timedOut = true;
-    clearInterval(poll);
-    showError("Google sign-in library is taking too long to load. Check your connection and reload.");
-  }, 8000);
-
-  if (script) {
-    script.addEventListener("load", () => {
-      if (timedOut) return;
-      clearInterval(poll);
-      clearTimeout(timer);
-      if (window.google && window.google.accounts && window.google.accounts.id) {
-        setupGoogle();
-      } else {
-        showError("Google sign-in library failed to load. Check your connection and reload.");
-      }
-    });
-    script.addEventListener("error", () => {
-      clearInterval(poll);
-      clearTimeout(timer);
-      timedOut = true;
-      showError("Google sign-in library failed to download. Check your connection and reload.");
-    });
-  } else {
-    clearInterval(poll);
-    clearTimeout(timer);
-    showError("Google sign-in library failed to load. Check your connection and reload.");
-  }
-}
-
-// Restore a previously logged-in user.
-const loginScreen = document.getElementById("loginScreen");
-const errorEl = document.getElementById("error");
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    attachNavigationHandlers();
-    // Try to restore saved user
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const user = JSON.parse(saved);
-        showWelcome(user);
-        navigate(window.location.hash || "#shop");
-        return;
-      } catch (e) { /* ignore */ }
-    }
-    init();
-  });
-} else {
+// This runs once on DOMContentLoaded or immediately if already loaded.
+function onDOMLoaded() {
   attachNavigationHandlers();
   // Try to restore saved user
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -626,7 +528,14 @@ if (document.readyState === "loading") {
       const user = JSON.parse(saved);
       showWelcome(user);
       navigate(window.location.hash || "#shop");
+      return;
     } catch (e) { /* ignore */ }
   }
   init();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", onDOMLoaded);
+} else {
+  onDOMLoaded();
 }

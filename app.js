@@ -48,6 +48,8 @@ const checkoutDesc = document.getElementById("checkoutDesc");
 const checkoutImg = document.getElementById("checkoutImg");
 const checkoutPrice = document.getElementById("checkoutPrice");
 const checkoutError = document.getElementById("checkoutError");
+const checkoutVideo = document.getElementById("checkoutVideo");
+const checkoutVideoWrapper = document.getElementById("checkoutVideoWrapper");
 const shopGrid = document.getElementById("shopGrid");
 
 let currentProduct = null;
@@ -81,6 +83,19 @@ function openCheckout(product) {
   checkoutImg.src = `products/${product.image}`;
   checkoutImg.alt = product.name;
   checkoutPrice.textContent = `${product.price} — choose payment method`;
+
+  if (product.demo) {
+    const videoId = product.demo.split('v=')[1]?.split('&')[0];
+    if (videoId) {
+      checkoutVideo.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+      checkoutVideoWrapper.style.display = 'block';
+      checkoutImg.style.display = 'none';
+    }
+  } else {
+    checkoutVideoWrapper.style.display = 'none';
+    checkoutImg.style.display = 'block';
+  }
+
   checkoutModal.classList.add("active");
   checkoutModal.hidden = false;
 }
@@ -91,6 +106,9 @@ function closeCheckout() {
   checkoutError.textContent = "";
   checkoutModal.classList.remove("active");
   checkoutModal.hidden = true;
+  checkoutVideo.src = "";
+  checkoutVideoWrapper.style.display = 'none';
+  checkoutImg.style.display = 'block';
 }
 
 // Open a payment link in a new tab. If the product has no link configured

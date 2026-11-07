@@ -170,6 +170,9 @@
   <!-- Checkout Modal -->
   <div id="checkoutModal" class="modal-overlay" hidden>
     <div class="modal-content">
+      <div id="checkoutVideoWrapper" style="display:none; margin-bottom:16px; border-radius:12px; overflow:hidden; aspect-ratio:16/9; background:#000;">
+        <iframe id="checkoutVideo" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%; height:100%;"></iframe>
+      </div>
       <img id="checkoutImg" class="checkout-img" alt="" />
       <h2 id="checkoutTitle">Checkout</h2>
       <p id="checkoutDesc" class="subtitle" style="font-size:13px; margin-bottom:4px;"></p>
@@ -185,6 +188,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async></script>
   <!-- ?v= busts the browser's cached copy whenever app.js changes. Bump it on edits. -->
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

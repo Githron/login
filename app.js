@@ -66,9 +66,6 @@ function renderShop() {
       </div>
       <div class="name">${p.name}</div>
       <div class="price">${p.price}</div>
-      <div class="demo">
-        <a href="${p.demo}" target="_blank" rel="noopener" onclick="event.stopPropagation()">▶ Demo</a>
-      </div>
       <button class="buy" type="button">Get preset →</button>
     `;
     card.addEventListener("click", () => openCheckout(p));
@@ -262,9 +259,12 @@ function attachNavigationHandlers() {
   const navToggle = document.getElementById("navToggle");
   const drawerBackdrop = document.getElementById("drawerBackdrop");
   const checkoutModalEl = document.getElementById("checkoutModal");
+  const pageMain = document.querySelector(".page-main");
 
   navToggle?.addEventListener("click", toggleDrawer);
   drawerBackdrop?.addEventListener("click", closeDrawer);
+  // Clicking the main content area closes the drawer
+  pageMain?.addEventListener("click", closeDrawer);
   // Clicking the drawer backdrop closes it; clicking inside the drawer keeps it open.
 
   // SPA navigation: clicking a nav link swaps the visible section in place.
@@ -293,7 +293,6 @@ function attachNavigationHandlers() {
   });
 
   // Logout buttons
-  document.getElementById("navLogout")?.addEventListener("click", logout);
   document.getElementById("navLogoutDrawer")?.addEventListener("click", logout);
 
   // ESC key closes modal or drawer

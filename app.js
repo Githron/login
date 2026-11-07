@@ -517,6 +517,64 @@ function b64urlToBytes(b64) {
   return new Uint8Array(binary.split("").map(c => c.charCodeAt(0)));
 }
 
+// Initialize Google Sign-In and warm caches.
+function init() {
+  if (!CLIENT_ID || CLIENT_ID === "PASTE_YOUR_GOOGLE_CLIENT_ID_HERE") {
+    showError("Google sign-in is not configured. Add your Client ID in app.js.");
+    return;
+  }
+
+  // Pre-warm the JWKS cache in the background.
+  warmJwks();
+
+  // The Google script is loaded with `async`, so it may arrive after DOMContentLoaded.
+  // Wait for it, and give up gracefully if it doesn't.
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    setupGoogle();
+    return;
+  }
+
+  const script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+  let timedOut = false;
+  // A load event can be missed — poll as a backstop.
+  const poll = setInterval(() => {
+    if (timedOut) return;
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      clearInterval(poll);
+      clearTimeout(timer);
+      setupGoogle();
+    }
+  }, 200);
+  const timer = setTimeout(() => {
+    timedOut = true;
+    clearInterval(poll);
+    showError("Google sign-in library is taking too long to load. Check your connection and reload.");
+  }, 8000);
+
+  if (script) {
+    script.addEventListener("load", () => {
+      if (timedOut) return;
+      clearInterval(poll);
+      clearTimeout(timer);
+      if (window.google && window.google.accounts && window.google.accounts.id) {
+        setupGoogle();
+      } else {
+        showError("Google sign-in library failed to load. Check your connection and reload.");
+      }
+    });
+    script.addEventListener("error", () => {
+      clearInterval(poll);
+      clearTimeout(timer);
+      timedOut = true;
+      showError("Google sign-in library failed to download. Check your connection and reload.");
+    });
+  } else {
+    clearInterval(poll);
+    clearTimeout(timer);
+    showError("Google sign-in library failed to load. Check your connection and reload.");
+  }
+}
+
 // Attach navigation handlers when DOM is ready
 // This runs once on DOMContentLoaded or immediately if already loaded.
 function onDOMLoaded() {

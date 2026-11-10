@@ -40,9 +40,69 @@ const PRODUCTS = [
     payMongo: "",   // PayMongo signup is currently paused — leave blank until available
     paypal: "https://paypal.me/romelolacida1",
   },
+  {
+    id: "gp5-djent",
+    name: "GP-5 Djent Machine",
+    price: "PHP 499",
+    description: "Tight, percussive high-gain for modern progressive metal.",
+    demo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    image: "58000_58076_2.jpg",
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-thrash",
+    name: "GP-5 Thrash Attack",
+    price: "PHP 399",
+    description: "Bay-area inspired thrash rhythm tone with aggressive mid-range.",
+    demo: "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    image: "58000_58076_3.jpg",
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-deathcore",
+    name: "GP-5 Deathcore Brutality",
+    price: "PHP 549",
+    description: "Drop-tuned breakdown machine with surgical precision.",
+    demo: "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
+    image: "58000_58076_4.jpg",
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-lead",
+    name: "GP-5 Lead Screamer",
+    price: "PHP 449",
+    description: "Singing high-gain lead tone with rich sustain and harmonics.",
+    demo: "https://www.youtube.com/watch?v=YQHsXMglC9A",
+    image: "58000_58076_5.jpg",
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-clean",
+    name: "GP-5 Clean Ambient",
+    price: "PHP 299",
+    description: "Pristine cleans with lush reverb and delay for ambient passages.",
+    demo: "https://www.youtube.com/watch?v=3tmd-ClpJxA",
+    image: "58000_58076_6.jpg",
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
 ];
 
+// Track login state
+let isLoggedIn = false;
+
 const checkoutModal = document.getElementById("checkoutModal");
+const featuredShop = document.getElementById("featuredShop");
+const featuredImg = document.getElementById("featuredImg");
+const featuredName = document.getElementById("featuredName");
+const featuredPrice = document.getElementById("featuredPrice");
+const featuredDesc = document.getElementById("featuredDesc");
+const featuredBuyBtn = document.getElementById("featuredBuyBtn");
+const featuredVideo = document.getElementById("featuredVideo");
 const checkoutTitle = document.getElementById("checkoutTitle");
 const checkoutDesc = document.getElementById("checkoutDesc");
 const checkoutImg = document.getElementById("checkoutImg");
@@ -57,23 +117,165 @@ let currentProduct = null;
 function renderShop() {
   shopGrid.innerHTML = "";
   if (productCount) productCount.textContent = `${PRODUCTS.length} preset${PRODUCTS.length === 1 ? "" : "s"}`;
-  PRODUCTS.forEach(p => {
+
+  // Render the featured hero from the first product (if any), with its
+  // demo video embedded beside the card.
+  if (PRODUCTS.length > 0) {
+    const featured = PRODUCTS[0];
+    featuredImg.src = `products/${featured.image}`;
+    featuredImg.alt = featured.name;
+    featuredName.textContent = featured.name;
+    featuredPrice.textContent = featured.price;
+    featuredDesc.textContent = featured.description || "";
+
+    // Lazy-load video: show thumbnail with play overlay, load iframe on click
+    const featuredVideoWrapper = document.getElementById("featuredVideoWrapper");
+    const featuredVideoThumb = document.getElementById("featuredVideoThumb");
+    const featuredVideoThumbImg = document.getElementById("featuredVideoThumbImg");
+    const featuredVideoIframe = document.getElementById("featuredVideo");
+
+    if (featured.demo) {
+      const videoId = featured.demo.split("v=")[1]?.split("&")[0];
+      if (videoId) {
+        // Set thumbnail (YouTube maxresdefault or hqdefault)
+        featuredVideoThumbImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+        featuredVideoThumbImg.alt = `${featured.name} demo`;
+        // Store video ID for lazy-loading
+        featuredVideoThumb.dataset.videoId = videoId;
+        featuredVideoIframe.dataset.videoId = videoId;
+        featuredVideoWrapper.hidden = false;
+        featuredShop.hidden = false;
+
+        // Click handler for lazy-load
+        featuredVideoThumb.onclick = () => loadVideo(featuredVideoWrapper, featuredVideoIframe);
+        featuredVideoThumb.onkeydown = (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            loadVideo(featuredVideoWrapper, featuredVideoIframe);
+          }
+        };
+      } else {
+        featuredVideoWrapper.hidden = true;
+        featuredShop.hidden = true;
+      }
+    } else {
+      featuredVideoWrapper.hidden = true;
+      featuredShop.hidden = true;
+    }
+
+    // The featured card's "Load Preset" button behaves like the grid cards.
+    const isSoldOut = !featured.payMongo && !featured.paypal;
+    if (isSoldOut) {
+      featuredBuyBtn.textContent = "Coming Soon";
+      featuredBuyBtn.disabled = true;
+      featuredBuyBtn.style.opacity = "0.6";
+      featuredBuyBtn.style.pointerEvents = "none";
+    } else if (!isLoggedIn) {
+      featuredBuyBtn.textContent = "Sign in to buy";
+      featuredBuyBtn.disabled = false;
+      featuredBuyBtn.style.opacity = "0.8";
+      featuredBuyBtn.style.pointerEvents = "auto";
+    } else {
+      featuredBuyBtn.textContent = "Load Preset";
+      featuredBuyBtn.disabled = false;
+      featuredBuyBtn.style.opacity = "1";
+      featuredBuyBtn.style.pointerEvents = "auto";
+    }
+
+    featuredBuyBtn.onclick = () => {
+      if (isSoldOut) return;
+      if (!isLoggedIn) { promptSignIn(); return; }
+      openCheckout(featured);
+    };
+  } else {
+    featuredShop.hidden = true;
+  }
+
+  // Render remaining products in the grid (skip featured)
+  const featuredProduct = PRODUCTS[0];
+  const gridProducts = PRODUCTS.filter(p => p !== featuredProduct);
+
+  gridProducts.forEach((p, index) => {
+    const isSoldOut = !p.payMongo && !p.paypal;
+
     const card = document.createElement("div");
     card.className = "product-card";
+    card.setAttribute("role", "button");
+    if (!isSoldOut) card.setAttribute("tabindex", "0");
+    else card.classList.add("sold-out");
+
+    // Staggered slot load delay: 40ms per card
+    card.style.setProperty("--delay", `${index * 40}ms`);
+
+    const badgeHTML = '<div class="product-badge">Preset</div>';
+    const soldOutBadge = isSoldOut ? '<div class="product-badge sold-out">Sold Out</div>' : "";
+
+    const demoHTML = p.demo
+      ? `<div class="demo"><a href="${p.demo}" target="_blank" rel="noopener">▶️ Demo</a></div>`
+      : "";
+
+    let buyText = "Load Preset";
+    if (isSoldOut) buyText = "Coming Soon";
+    else if (!isLoggedIn) buyText = "Sign in to buy";
+
+    card.setAttribute("aria-label", `View ${p.name} — ${p.price}`);
     card.innerHTML = `
-      <div class="card-media">
+      <div class="card-media" style="position: relative;">
         <img src="products/${p.image}" alt="${p.name}" class="prod-img" />
+        ${badgeHTML}
+        ${soldOutBadge}
       </div>
       <div class="name">${p.name}</div>
       <div class="price">${p.price}</div>
-      <button class="buy" type="button">Get preset →</button>
+      ${demoHTML}
+      <span class="buy">${buyText}</span>
     `;
-    card.addEventListener("click", () => openCheckout(p));
+
+    card.addEventListener("click", (e) => {
+      if (e.target.closest("a")) return;
+      if (isSoldOut) return;
+      if (!isLoggedIn) { promptSignIn(); return; }
+      openCheckout(p);
+    });
+    card.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      if (e.target !== card) return;
+      if (isSoldOut) return;
+      e.preventDefault();
+      if (!isLoggedIn) { promptSignIn(); return; }
+      openCheckout(p);
+    });
+
     shopGrid.appendChild(card);
   });
 }
 
+// Lazy-load YouTube iframe on click
+function loadVideo(wrapper, iframe) {
+  if (wrapper.classList.contains("loaded")) return;
+  const videoId = iframe.dataset.videoId || wrapper.querySelector(".video-thumb")?.dataset.videoId;
+  if (!videoId) return;
+  iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
+  wrapper.classList.add("loaded");
+}
+
 function openCheckout(product) {
+  // Auth guard: require a signed-in user before opening checkout
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) {
+    // Show error in the modal since login screen is hidden on dashboard
+    checkoutError.textContent = "Please sign in to purchase presets.";
+    checkoutError.hidden = false;
+    // Open modal briefly to show error, then auto-close
+    checkoutModal.classList.add("active");
+    checkoutModal.hidden = false;
+    setTimeout(() => closeCheckout(), 2500);
+    return;
+  }
+
+  // Save the currently focused element to restore focus on close
+  lastFocusedBeforeModal = document.activeElement;
+
   currentProduct = product;
   checkoutTitle.textContent = product.name;
   checkoutDesc.textContent = product.description || "";
@@ -81,12 +283,37 @@ function openCheckout(product) {
   checkoutImg.alt = product.name;
   checkoutPrice.textContent = `${product.price} — choose payment method`;
 
+  const checkoutVideoWrapper = document.getElementById("checkoutVideoWrapper");
+  const checkoutVideoThumb = document.getElementById("checkoutVideoThumb");
+  const checkoutVideoThumbImg = document.getElementById("checkoutVideoThumbImg");
+  const checkoutVideoIframe = document.getElementById("checkoutVideo");
+
+  // Reset wrapper state
+  checkoutVideoWrapper.classList.remove("loaded");
+  checkoutVideoIframe.src = "";
+
   if (product.demo) {
     const videoId = product.demo.split('v=')[1]?.split('&')[0];
     if (videoId) {
-      checkoutVideo.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+      // Set thumbnail
+      checkoutVideoThumbImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      checkoutVideoThumbImg.alt = `${product.name} demo`;
+      checkoutVideoThumb.dataset.videoId = videoId;
+      checkoutVideoIframe.dataset.videoId = videoId;
       checkoutVideoWrapper.style.display = 'block';
       checkoutImg.style.display = 'none';
+
+      // Click handler for lazy-load
+      checkoutVideoThumb.onclick = () => loadVideo(checkoutVideoWrapper, checkoutVideoIframe);
+      checkoutVideoThumb.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          loadVideo(checkoutVideoWrapper, checkoutVideoIframe);
+        }
+      };
+    } else {
+      checkoutVideoWrapper.style.display = 'none';
+      checkoutImg.style.display = 'block';
     }
   } else {
     checkoutVideoWrapper.style.display = 'none';
@@ -95,7 +322,18 @@ function openCheckout(product) {
 
   checkoutModal.classList.add("active");
   checkoutModal.hidden = false;
+
+  // Focus trap: move focus to the first focusable element in the modal
+  const firstFocusable = checkoutModal.querySelector(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  firstFocusable?.focus();
+
+  // Add keydown listener for focus trapping
+  checkoutModal.addEventListener("keydown", handleModalKeydown);
 }
+
+let lastFocusedBeforeModal = null;
 
 function closeCheckout() {
   currentProduct = null;
@@ -103,9 +341,49 @@ function closeCheckout() {
   checkoutError.textContent = "";
   checkoutModal.classList.remove("active");
   checkoutModal.hidden = true;
-  checkoutVideo.src = "";
+
+  const checkoutVideoWrapper = document.getElementById("checkoutVideoWrapper");
+  const checkoutVideoIframe = document.getElementById("checkoutVideo");
+  checkoutVideoIframe.src = "";
+  checkoutVideoWrapper.classList.remove("loaded");
   checkoutVideoWrapper.style.display = 'none';
   checkoutImg.style.display = 'block';
+
+  // Remove focus trap listener
+  checkoutModal.removeEventListener("keydown", handleModalKeydown);
+
+  // Return focus to the element that opened the modal
+  if (lastFocusedBeforeModal) {
+    lastFocusedBeforeModal.focus();
+    lastFocusedBeforeModal = null;
+  }
+}
+
+// Focus trap handler for the checkout modal
+function handleModalKeydown(e) {
+  if (e.key !== "Tab") return;
+
+  const focusableElements = checkoutModal.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  if (focusableElements.length === 0) return;
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (e.shiftKey) {
+    // Shift+Tab: if on first element, wrap to last
+    if (document.activeElement === firstElement) {
+      e.preventDefault();
+      lastElement.focus();
+    }
+  } else {
+    // Tab: if on last element, wrap to first
+    if (document.activeElement === lastElement) {
+      e.preventDefault();
+      firstElement.focus();
+    }
+  }
 }
 
 // Open a payment link in a new tab. If the product has no link configured
@@ -127,6 +405,51 @@ function payViaPayMongo() {
 
 function payViaPayPal() {
   payViaLink(currentProduct?.paypal, "PayPal");
+}
+
+// --- Auth State Helpers ---
+// Show the login screen (swapping the dashboard out) so the user can sign in.
+function promptSignIn() {
+  closeDrawer();
+  const loginScreen = document.getElementById("loginScreen");
+  loginScreen.hidden = false;
+  dashboardScreen.hidden = true;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setLoginState(loggedIn) {
+  isLoggedIn = loggedIn;
+
+  const navAvatar = document.getElementById("navAvatar");
+  const navUserInfo = document.querySelector(".nav-user-info");
+  const navSignInBtn = document.getElementById("navSignInBtn");
+  const drawerAvatar = document.getElementById("drawerAvatar");
+  const drawerUserInfo = document.querySelector("#drawerUserContainer .nav-user-info");
+  const drawerSignInBtn = document.getElementById("drawerSignInBtn");
+  const navLogoutDrawer = document.getElementById("navLogoutDrawer");
+
+  if (loggedIn) {
+    // Show user info, hide sign-in buttons
+    navAvatar?.classList.remove("logged-out");
+    navUserInfo?.classList.remove("logged-out");
+    navSignInBtn?.setAttribute("hidden", true);
+    drawerAvatar?.classList.remove("logged-out");
+    drawerUserInfo?.classList.remove("logged-out");
+    drawerSignInBtn?.setAttribute("hidden", true);
+    navLogoutDrawer?.removeAttribute("hidden");
+  } else {
+    // Hide user info, show sign-in buttons
+    navAvatar?.classList.add("logged-out");
+    navUserInfo?.classList.add("logged-out");
+    navSignInBtn?.removeAttribute("hidden");
+    drawerAvatar?.classList.add("logged-out");
+    drawerUserInfo?.classList.add("logged-out");
+    drawerSignInBtn?.removeAttribute("hidden");
+    navLogoutDrawer?.setAttribute("hidden", true);
+  }
+
+  // Re-render shop with new login state
+  renderShop();
 }
 
 // Populate every place the user's name/avatar appears (navbar, drawer, header).
@@ -159,6 +482,7 @@ function renderUser(user) {
 
 function showWelcome(user) {
   renderUser(user);
+  setLoginState(true);
   // Hide the whole login screen, not just its inner card — otherwise the
   // empty container keeps its layout space and the dashboard gets pushed off.
   const loginScreen = document.getElementById("loginScreen");
@@ -180,6 +504,7 @@ function logout() {
   loginScreen.hidden = false;
   dashboardScreen.hidden = true;
   clearError();
+  setLoginState(false);
 }
 
 // --- SPA routing ---
@@ -294,6 +619,10 @@ function attachNavigationHandlers() {
 
   // Logout buttons
   document.getElementById("navLogoutDrawer")?.addEventListener("click", logout);
+
+  // Sign-In buttons (for logged-out state) — swap to the login screen.
+  document.getElementById("navSignInBtn")?.addEventListener("click", promptSignIn);
+  document.getElementById("drawerSignInBtn")?.addEventListener("click", promptSignIn);
 
   // ESC key closes modal or drawer
   document.addEventListener("keydown", (e) => {
@@ -606,6 +935,14 @@ function onDOMLoaded() {
       return;
     } catch (e) { /* ignore */ }
   }
+
+  // No saved user: show dashboard in logged-out state (read-only)
+  const loginScreen = document.getElementById("loginScreen");
+  loginScreen.hidden = true;
+  dashboardScreen.hidden = false;
+  setLoginState(false);
+  renderShop();
+  navigate(window.location.hash || "#shop");
   init();
 }
 

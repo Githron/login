@@ -1,27 +1,9 @@
-[5110:5110:1107/151215.549792:ERROR:./../src/base/files/file_path_watcher_inotify.cc:922] Failed to read /proc/sys/fs/inotify/max_user_watches
-[5111:5111:1107/151215.591893:ERROR:./../src/base/files/file_path_watcher_inotify.cc:922] Failed to read /proc/sys/fs/inotify/max_user_watches
-[5103:5124:1107/151215.640368:ERROR:./../src/base/files/file_path_watcher_inotify.cc:922] Failed to read /proc/sys/fs/inotify/max_user_watches
-[5103:5127:1107/151215.641228:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
-[5103:5127:1107/151215.673150:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5127:1107/151215.674167:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
-[5103:5127:1107/151215.675213:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
-[5103:5127:1107/151215.676052:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5127:1107/151215.731785:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5127:1107/151215.901001:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5103:1107/151216.136578:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5103:1107/151216.136977:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5103:1107/151216.137728:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5127:1107/151216.138706:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5127:1107/151216.138824:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5103:1107/151216.156215:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5127:1107/151216.209872:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
-[5103:5127:1107/151216.210585:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
-[5103:5103:1107/151216.209930:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5103:1107/151216.217871:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5127:1107/151216.218840:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5103:1107/151216.230625:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 
-[5103:5103:1107/151216.265389:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5127:1107/151216.273201:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5103:1107/151216.312745:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[5103:5127:1107/151216.314469:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[5103:5103:1107/151216.330740:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[13169:13169:1108/220920.373946:ERROR:./../src/base/files/file_path_watcher_inotify.cc:922] Failed to read /proc/sys/fs/inotify/max_user_watches
+[13168:13168:1108/220920.374990:ERROR:./../src/base/files/file_path_watcher_inotify.cc:922] Failed to read /proc/sys/fs/inotify/max_user_watches
+[13158:13176:1108/220920.487360:ERROR:./../src/base/files/file_path_watcher_inotify.cc:922] Failed to read /proc/sys/fs/inotify/max_user_watches
+[13158:13181:1108/220920.491922:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
+[13158:13181:1108/220920.542747:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
+[13158:13181:1108/220920.550318:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
+[13158:13181:1108/220921.081333:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
+[13158:13181:1108/220921.082150:ERROR:./../src/dbus/bus.cc:405] Failed to connect to the bus: Failed to connect to socket /data/data/com.termux/files/usr/var/run/dbus/system_bus_socket: No such file or directory
+[13158:13158:1108/220921.091181:ERROR:./../src/dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 

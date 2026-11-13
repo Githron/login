@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://accounts.google.com" />
   <link rel="preconnect" href="https://www.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -99,12 +99,12 @@
         <!-- ===== Shop Page ===== -->
         <section class="shop" id="shop">
           <div class="page-header">
-            <span class="ui-label">Presets</span>
+            <div class="page-header-head">
+              <span class="ui-label">Presets</span>
+              <span class="shop-count" id="productCount"></span>
+            </div>
             <h1>Available Presets</h1>
             <p class="shop-sub">Pick a preset, preview the demo, and get started.</p>
-          </div>
-          <div class="shop-head">
-            <span class="shop-count" id="productCount"></span>
           </div>
           <!-- Featured hero: card + video player side by side (stacks on mobile) -->
           <div id="featuredShop" class="featured-shop" hidden>
@@ -124,16 +124,6 @@
             </div>
             <div class="featured-video">
               <div class="video-wrapper" id="featuredVideoWrapper">
-                <!-- Thumbnail with play overlay (lazy-loads iframe on click) -->
-                <div class="video-thumb" id="featuredVideoThumb" role="button" tabindex="0" aria-label="Play demo video">
-                  <img id="featuredVideoThumbImg" src="" alt="" />
-                  <div class="play-overlay">
-                    <div class="play-btn-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    </div>
-                  </div>
-                </div>
-                <!-- Iframe loads on click -->
                 <iframe id="featuredVideo" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Demo video"></iframe>
               </div>
             </div>
@@ -205,17 +195,9 @@
   </div><!-- dashboardScreen -->
 
   <!-- Checkout Modal -->
-  <div id="checkoutModal" class="modal-overlay" hidden>
+  <div id="checkoutModal" class="modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
     <div class="modal-content">
-      <div id="checkoutVideoWrapper" style="display:none; margin-bottom:16px; border-radius:8px; overflow:hidden; aspect-ratio:16/9; background:var(--panel); border:1px solid var(--panel-border);">
-        <div class="video-thumb" id="checkoutVideoThumb" role="button" tabindex="0" aria-label="Play demo video">
-          <img id="checkoutVideoThumbImg" src="" alt="" />
-          <div class="play-overlay">
-            <div class="play-btn-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-          </div>
-        </div>
+      <div id="checkoutVideoWrapper" style="display:none; margin-bottom:16px; border-radius:0; overflow:hidden; aspect-ratio:16/9; background:var(--canvas-raised); border:1px solid var(--hairline);">
         <iframe id="checkoutVideo" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Demo video"></iframe>
       </div>
       <img id="checkoutImg" class="checkout-img" alt="" />
@@ -239,6 +221,6 @@
 
   <script src="https://accounts.google.com/gsi/client" async></script>
   <!-- ?v= busts the browser's cached copy whenever app.js changes. Bump it on edits. -->
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=12"></script>
 </body>
 </html>

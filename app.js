@@ -17,6 +17,77 @@ const productCount = document.getElementById("productCount");
 const footerUser = document.getElementById("footerUser");
 const errorEl = document.getElementById("error");
 
+// --- Shop / Checkout ---
+// Your presets. Each product has a demo (YouTube) and the gear image shown on the card.
+//
+// Images: only `58000_58076_1.jpg` is actually present on disk. Any other
+// filename 404s. Missing images fall back to the first photo so a tile never
+// renders empty — drop the real files into products/ and this resolves itself.
+const FALLBACK_IMAGE = "58000_58076_1.jpg";
+
+const PRODUCTS = [
+  {
+    id: "gp5-modernmetal",
+    name: "GP-5 Modern Metal",
+    price: "PHP 499",
+    description: "High-gain 5150-style modern metal preset for the Valeton GP-5.",
+    demo: "https://www.youtube.com/watch?v=jss7xTVT99M",
+    image: FALLBACK_IMAGE,
+    payMongo: "",   // PayMongo signup is currently paused — leave blank until available
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-djent",
+    name: "GP-5 Djent Machine",
+    price: "PHP 499",
+    description: "Tight, percussive high-gain for modern progressive metal.",
+    demo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    image: FALLBACK_IMAGE,
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-thrash",
+    name: "GP-5 Thrash Attack",
+    price: "PHP 399",
+    description: "Bay-area inspired thrash rhythm tone with aggressive mid-range.",
+    demo: "https://www.youtube.com/watch?v=9bZkp7q19f0",
+    image: FALLBACK_IMAGE,
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-deathcore",
+    name: "GP-5 Deathcore Brutality",
+    price: "PHP 549",
+    description: "Drop-tuned breakdown machine with surgical precision.",
+    demo: "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
+    image: FALLBACK_IMAGE,
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-lead",
+    name: "GP-5 Lead Screamer",
+    price: "PHP 449",
+    description: "Singing high-gain lead tone with rich sustain and harmonics.",
+    demo: "https://www.youtube.com/watch?v=YQHsXMglC9A",
+    image: FALLBACK_IMAGE,
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+  {
+    id: "gp5-clean",
+    name: "GP-5 Clean Ambient",
+    price: "PHP 299",
+    description: "Pristine cleans with lush reverb and delay for ambient passages.",
+    demo: "https://www.youtube.com/watch?v=3tmd-ClpJxA",
+    image: FALLBACK_IMAGE,
+    payMongo: "",
+    paypal: "https://paypal.me/romelolacida1",
+  },
+];
+
 function showError(msg) {
   errorEl.textContent = msg;
   errorEl.hidden = false;
@@ -27,70 +98,6 @@ function clearError() {
   errorEl.textContent = "";
 }
 
-// --- Shop / Checkout ---
-// Your presets. Each product has a demo (YouTube) and the gear image shown on the card.
-const PRODUCTS = [
-  {
-    id: "gp5-modernmetal",
-    name: "GP-5 Modern Metal",
-    price: "PHP 499",
-    description: "High-gain 5150-style modern metal preset for the Valeton GP-5.",
-    demo: "https://www.youtube.com/watch?v=jss7xTVT99M",
-    image: "58000_58076_1.jpg",
-    payMongo: "",   // PayMongo signup is currently paused — leave blank until available
-    paypal: "https://paypal.me/romelolacida1",
-  },
-  {
-    id: "gp5-djent",
-    name: "GP-5 Djent Machine",
-    price: "PHP 499",
-    description: "Tight, percussive high-gain for modern progressive metal.",
-    demo: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    image: "58000_58076_2.jpg",
-    payMongo: "",
-    paypal: "https://paypal.me/romelolacida1",
-  },
-  {
-    id: "gp5-thrash",
-    name: "GP-5 Thrash Attack",
-    price: "PHP 399",
-    description: "Bay-area inspired thrash rhythm tone with aggressive mid-range.",
-    demo: "https://www.youtube.com/watch?v=9bZkp7q19f0",
-    image: "58000_58076_3.jpg",
-    payMongo: "",
-    paypal: "https://paypal.me/romelolacida1",
-  },
-  {
-    id: "gp5-deathcore",
-    name: "GP-5 Deathcore Brutality",
-    price: "PHP 549",
-    description: "Drop-tuned breakdown machine with surgical precision.",
-    demo: "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
-    image: "58000_58076_4.jpg",
-    payMongo: "",
-    paypal: "https://paypal.me/romelolacida1",
-  },
-  {
-    id: "gp5-lead",
-    name: "GP-5 Lead Screamer",
-    price: "PHP 449",
-    description: "Singing high-gain lead tone with rich sustain and harmonics.",
-    demo: "https://www.youtube.com/watch?v=YQHsXMglC9A",
-    image: "58000_58076_5.jpg",
-    payMongo: "",
-    paypal: "https://paypal.me/romelolacida1",
-  },
-  {
-    id: "gp5-clean",
-    name: "GP-5 Clean Ambient",
-    price: "PHP 299",
-    description: "Pristine cleans with lush reverb and delay for ambient passages.",
-    demo: "https://www.youtube.com/watch?v=3tmd-ClpJxA",
-    image: "58000_58076_6.jpg",
-    payMongo: "",
-    paypal: "https://paypal.me/romelolacida1",
-  },
-];
 
 // Track login state
 let isLoggedIn = false;
@@ -127,33 +134,15 @@ function renderShop() {
     featuredName.textContent = featured.name;
     featuredPrice.textContent = featured.price;
     featuredDesc.textContent = featured.description || "";
-
-    // Lazy-load video: show thumbnail with play overlay, load iframe on click
-    const featuredVideoWrapper = document.getElementById("featuredVideoWrapper");
-    const featuredVideoThumb = document.getElementById("featuredVideoThumb");
-    const featuredVideoThumbImg = document.getElementById("featuredVideoThumbImg");
-    const featuredVideoIframe = document.getElementById("featuredVideo");
-
+    featuredImg.onerror = () => { featuredImg.style.display = 'none'; };
     if (featured.demo) {
       const videoId = featured.demo.split("v=")[1]?.split("&")[0];
       if (videoId) {
-        // Set thumbnail (YouTube maxresdefault or hqdefault)
-        featuredVideoThumbImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-        featuredVideoThumbImg.alt = `${featured.name} demo`;
-        // Store video ID for lazy-loading
-        featuredVideoThumb.dataset.videoId = videoId;
-        featuredVideoIframe.dataset.videoId = videoId;
+        // Auto-load YouTube demo iframe directly (no lazy overlay).
+        const featuredVideoIframe = document.getElementById("featuredVideo");
+        featuredVideoIframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
         featuredVideoWrapper.hidden = false;
         featuredShop.hidden = false;
-
-        // Click handler for lazy-load
-        featuredVideoThumb.onclick = () => loadVideo(featuredVideoWrapper, featuredVideoIframe);
-        featuredVideoThumb.onkeydown = (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            loadVideo(featuredVideoWrapper, featuredVideoIframe);
-          }
-        };
       } else {
         featuredVideoWrapper.hidden = true;
         featuredShop.hidden = true;
@@ -165,22 +154,10 @@ function renderShop() {
 
     // The featured card's "Load Preset" button behaves like the grid cards.
     const isSoldOut = !featured.payMongo && !featured.paypal;
-    if (isSoldOut) {
-      featuredBuyBtn.textContent = "Coming Soon";
-      featuredBuyBtn.disabled = true;
-      featuredBuyBtn.style.opacity = "0.6";
-      featuredBuyBtn.style.pointerEvents = "none";
-    } else if (!isLoggedIn) {
-      featuredBuyBtn.textContent = "Sign in to buy";
-      featuredBuyBtn.disabled = false;
-      featuredBuyBtn.style.opacity = "0.8";
-      featuredBuyBtn.style.pointerEvents = "auto";
-    } else {
-      featuredBuyBtn.textContent = "Load Preset";
-      featuredBuyBtn.disabled = false;
-      featuredBuyBtn.style.opacity = "1";
-      featuredBuyBtn.style.pointerEvents = "auto";
-    }
+    featuredBuyBtn.disabled = isSoldOut;
+    if (isSoldOut) featuredBuyBtn.textContent = "Coming Soon";
+    else if (!isLoggedIn) featuredBuyBtn.textContent = "Sign in to buy";
+    else featuredBuyBtn.textContent = "Load Preset";
 
     featuredBuyBtn.onclick = () => {
       if (isSoldOut) return;
@@ -207,11 +184,11 @@ function renderShop() {
     // Staggered slot load delay: 40ms per card
     card.style.setProperty("--delay", `${index * 40}ms`);
 
-    const badgeHTML = '<div class="product-badge">Preset</div>';
+    const badgeHTML = '';
     const soldOutBadge = isSoldOut ? '<div class="product-badge sold-out">Sold Out</div>' : "";
 
     const demoHTML = p.demo
-      ? `<div class="demo"><a href="${p.demo}" target="_blank" rel="noopener">▶️ Demo</a></div>`
+      ? `<div class="demo"><a href="${p.demo}" target="_blank" rel="noopener">Listen to demo</a></div>`
       : "";
 
     let buyText = "Load Preset";
@@ -221,7 +198,7 @@ function renderShop() {
     card.setAttribute("aria-label", `View ${p.name} — ${p.price}`);
     card.innerHTML = `
       <div class="card-media" style="position: relative;">
-        <img src="products/${p.image}" alt="${p.name}" class="prod-img" />
+        <img src="products/${p.image}" alt="${p.name}" class="prod-img" onerror="this.style.display='none'" />
         ${badgeHTML}
         ${soldOutBadge}
       </div>
@@ -250,15 +227,6 @@ function renderShop() {
   });
 }
 
-// Lazy-load YouTube iframe on click
-function loadVideo(wrapper, iframe) {
-  if (wrapper.classList.contains("loaded")) return;
-  const videoId = iframe.dataset.videoId || wrapper.querySelector(".video-thumb")?.dataset.videoId;
-  if (!videoId) return;
-  iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
-  wrapper.classList.add("loaded");
-}
-
 function openCheckout(product) {
   // Auth guard: require a signed-in user before opening checkout
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -274,6 +242,7 @@ function openCheckout(product) {
   }
 
   // Save the currently focused element to restore focus on close
+  // Must be BEFORE showing modal to avoid race condition
   lastFocusedBeforeModal = document.activeElement;
 
   currentProduct = product;
@@ -281,36 +250,22 @@ function openCheckout(product) {
   checkoutDesc.textContent = product.description || "";
   checkoutImg.src = `products/${product.image}`;
   checkoutImg.alt = product.name;
+  checkoutImg.onerror = () => { checkoutImg.style.display = 'none'; };
   checkoutPrice.textContent = `${product.price} — choose payment method`;
 
   const checkoutVideoWrapper = document.getElementById("checkoutVideoWrapper");
-  const checkoutVideoThumb = document.getElementById("checkoutVideoThumb");
-  const checkoutVideoThumbImg = document.getElementById("checkoutVideoThumbImg");
   const checkoutVideoIframe = document.getElementById("checkoutVideo");
 
   // Reset wrapper state
-  checkoutVideoWrapper.classList.remove("loaded");
   checkoutVideoIframe.src = "";
 
   if (product.demo) {
     const videoId = product.demo.split('v=')[1]?.split('&')[0];
     if (videoId) {
-      // Set thumbnail
-      checkoutVideoThumbImg.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-      checkoutVideoThumbImg.alt = `${product.name} demo`;
-      checkoutVideoThumb.dataset.videoId = videoId;
-      checkoutVideoIframe.dataset.videoId = videoId;
+      // Auto-load YouTube demo iframe directly (no lazy overlay).
+      checkoutVideoIframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&autoplay=1`;
       checkoutVideoWrapper.style.display = 'block';
       checkoutImg.style.display = 'none';
-
-      // Click handler for lazy-load
-      checkoutVideoThumb.onclick = () => loadVideo(checkoutVideoWrapper, checkoutVideoIframe);
-      checkoutVideoThumb.onkeydown = (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          loadVideo(checkoutVideoWrapper, checkoutVideoIframe);
-        }
-      };
     } else {
       checkoutVideoWrapper.style.display = 'none';
       checkoutImg.style.display = 'block';
@@ -325,7 +280,7 @@ function openCheckout(product) {
 
   // Focus trap: move focus to the first focusable element in the modal
   const firstFocusable = checkoutModal.querySelector(
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]):not(iframe)'
   );
   firstFocusable?.focus();
 
@@ -345,7 +300,6 @@ function closeCheckout() {
   const checkoutVideoWrapper = document.getElementById("checkoutVideoWrapper");
   const checkoutVideoIframe = document.getElementById("checkoutVideo");
   checkoutVideoIframe.src = "";
-  checkoutVideoWrapper.classList.remove("loaded");
   checkoutVideoWrapper.style.display = 'none';
   checkoutImg.style.display = 'block';
 
@@ -364,7 +318,7 @@ function handleModalKeydown(e) {
   if (e.key !== "Tab") return;
 
   const focusableElements = checkoutModal.querySelectorAll(
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"]):not(iframe)'
   );
   if (focusableElements.length === 0) return;
 
